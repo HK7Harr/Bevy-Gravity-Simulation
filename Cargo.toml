@@ -1,0 +1,9 @@
+[package]
+name = "Learning-Bevy"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bevy = {version = "0.19.0", features = ["dynamic_linking", "pan_camera"]}
+h_math = "1.6.1"
+rand = "0.10.2"
