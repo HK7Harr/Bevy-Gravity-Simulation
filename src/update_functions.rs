@@ -2,7 +2,6 @@ use crate::{components::Planet, internal_imports::*};
 
 pub fn gravitational_cycle(
     mut planets: Query<(&mut Planet, &mut Transform)>,
-    time: Res<Time>,
 ) {
     // snapshot: read-only pass over the same query
     let snapshot: Vec<(Planet, Transform)> = planets
@@ -16,18 +15,26 @@ pub fn gravitational_cycle(
         planet.net_force();
         planet.accelerate();
 
-        transform.translation += (planet.velocity.normalize_or_zero() * (planet.velocity.length() / MPP) * time.delta_secs() as f64).as_vec3();
-        println!("{}", planet.velocity);
-    }
+        }
 }
 
 pub fn collision_detection(
     mut planets: Query<(&mut Planet, &mut Transform)>,
-    time: Res<Time>,
 ) {
     let snapshot: Vec<(Planet, Transform)> = planets
     .iter()
     .map(|(planet, transform)| (planet.clone(), *transform))
     .collect();
+    for (mut planet,transform) in planets.iter_mut() {
+        planet.adjust_for_collision(&transform, &snapshot);
+    }
+}
 
+pub fn apply_velocity(
+    mut planets: Query<(&mut Planet, &mut Transform)>,
+    time: Res<Time>
+) {
+    for (planet, mut transform) in planets.iter_mut() {
+        transform.translation += (planet.velocity.normalize() * (planet.velocity.length() / MPP) * time.delta_secs() as f64).as_vec3();
+    }
 }

@@ -1,5 +1,5 @@
 
-
+use crate::helpers::*;
 use crate::components::Planet;
 use crate::internal_imports::*;
 
@@ -37,14 +37,31 @@ fn spawn_random_planets(
     commands: &mut Commands,
     meshes: &mut Assets<Mesh>,
     materials: &mut Assets<ColorMaterial>,
-    radius: (i32, i32),
+    radius_range: (i32, i32),
     ids: Vec<i32>, // the length of the vec is the amount of planets
     x_range: (i32, i32),
     y_range: (i32, i32)
 ) {
     let mut rng = rand::rng();
+    let mut info: Vec<(Transform, i32)> = Vec::new();
     for id in ids {
-        spawn_planet(commands, meshes, materials, rng.random_range(radius.0..=radius.1),id, random_color(), random_transform(x_range, y_range));
+        let mut radius = rng.random_range(radius_range.0..=radius_range.1);
+        let mut transform = random_transform(x_range, y_range);
+        loop {
+            if info.is_empty() == true {
+                info.push((transform, radius));
+                break;
+            }
+            for i in &info {
+                if com_length_pixels_2d(transform.translation, i.0.translation) <= (radius + i.1) as f64 {
+                    radius = rng.random_range(radius_range.0..=radius_range.1);
+                    transform = random_transform(x_range, y_range);
+                }
+            }
+            info.push((transform, radius));
+            break;
+        }
+        spawn_planet(commands, meshes, materials, radius, id, random_color(), transform);
     }
 }
 
@@ -54,7 +71,7 @@ pub fn spawn_planets(
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     
-    spawn_random_planets(&mut commands, &mut meshes, &mut materials, (20, 350), (1..=20).collect(), (-3500, 3500), (-3500, 3500));
+    spawn_random_planets(&mut commands, &mut meshes, &mut materials, (20, 350), (1..=35).collect(), (-10000, 10000), (-10000, 10000));
 
     
     /*

@@ -16,9 +16,10 @@ mod internal_imports;
 
 
 
-pub const G: f64 = 1.0; // G, universal gravitational force
-pub const MPP: f64 = 100.0; // Meters per pixel
-pub const WM: f64 = 10000000.0; // wheight modifier, area of the planet * WM = mass
+pub const G: f64 = 10.0; // G, universal gravitational force
+pub const MPP: f64 = 1000.0; // Meters per pixel
+pub const WM: f64 = 100000000.0; // wheight modifier, area of the planet * WM = mass
+pub const MB: f64 = 1000.0; // Max Bounce acceleration
 
 #[derive(States, Debug, Clone, Copy, Eq, PartialEq, Hash, Default)]
 enum SimState {
@@ -39,7 +40,7 @@ fn main() {
         .add_systems(Startup, (setup_camera, spawn_planets))
         .add_systems(Update, wait_for_start)
 
-        .add_systems(Update, gravitational_cycle.run_if(in_state(SimState::Running)))
+        .add_systems(Update, (gravitational_cycle, collision_detection, apply_velocity).run_if(in_state(SimState::Running)))
         .run();
 }
 
