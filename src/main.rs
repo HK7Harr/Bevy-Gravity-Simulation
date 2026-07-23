@@ -16,10 +16,10 @@ mod internal_imports;
 
 
 
-pub const G: f64 = 10.0; // G, universal gravitational force
-pub const MPP: f64 = 1000.0; // Meters per pixel
-pub const WM: f64 = 100000000.0; // wheight modifier, area of the planet * WM = mass
-pub const MB: f64 = 1000.0; // Max Bounce acceleration
+pub const G: f64 = 100.0; // G, universal gravitational force
+pub const MPP: f64 = 100.0; // Meters per pixel
+pub const WM: f64 = 1000000.0; // wheight modifier, area of the planet * WM = mass
+pub const EC: f64 = 0.65; // ellastic coefficient, 0 - 1
 
 #[derive(States, Debug, Clone, Copy, Eq, PartialEq, Hash, Default)]
 enum SimState {

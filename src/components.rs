@@ -53,24 +53,89 @@ impl Planet {
         // a = m/F, F in this case is the magnitude of the net force vector
         self.velocity += self.net_force/self.mass;
     }
-
+    
     pub fn adjust_for_collision(&mut self, own_transform: &Mut<Transform>, all_planets: &Vec<(Planet, Transform)>) {
         for planet in all_planets {
             if planet.0.id != self.id {
                 if com_length_pixels_2d(own_transform.translation, planet.1.translation) <= self.radius as f64 + planet.0.radius as f64 {
-                    let mass_scalar_ratio = self.velocity - (2.0 * planet.0.mass)/(self.mass + planet.0.mass);
+                    let mass_scalar_ratio = (2.0 * planet.0.mass)/(self.mass + planet.0.mass);
                     let velocity_difference = self.velocity - planet.0.velocity;
-                    let transform_difference = own_transform.translation.as_dvec3();
+                    let transform_difference = own_transform.translation.as_dvec3() - planet.1.translation.as_dvec3();
 
                     let dot_product = velocity_difference.dot(transform_difference);
+                    
                     if dot_product >= 0.0 {
-                        return; 
+                        continue;
                     }
+                    
                     let distance_squared = transform_difference.length_squared().max(0.01);
-                    self.velocity = self.velocity - (mass_scalar_ratio * (dot_product / distance_squared) * transform_difference);
+
+                    let normal = transform_difference.normalize();
+
+                    self.velocity = self.velocity - (EC * mass_scalar_ratio * (dot_product / distance_squared) * transform_difference);
                     println!("{}", self.velocity.length());
                 }
             }
         }
     }
+    
+    /* 
+    pub fn adjust_for_collision(
+    &mut self,
+    own_transform: &Mut<Transform>,
+    all_planets: &Vec<(Planet, Transform)>
+    ) {
+        for planet in all_planets {
+            if planet.0.id != self.id {
+
+                let position_difference =
+                    own_transform.translation.as_dvec3()
+                    - planet.1.translation.as_dvec3();
+
+                let distance = position_difference.length();
+
+                // Collision check
+                if distance <= self.radius as f64 + planet.0.radius as f64 {
+
+                    // Collision normal
+                    let normal = position_difference.normalize();
+
+                    // Relative velocity
+                    let relative_velocity =
+                        self.velocity - planet.0.velocity;
+
+                    // Velocity along collision normal
+                    let velocity_normal =
+                        relative_velocity.dot(normal);
+
+                    // Already moving apart
+                    if velocity_normal > 0.0 {
+                        continue;
+                    }
+
+
+                    // Coefficient of restitution
+                    // 1.0 = elastic
+                    // 0.0 = perfectly inelastic
+                    let restitution = 0.2;
+
+
+                    // Calculate impulse scalar
+                    let impulse_strength =
+                        -(1.0 + restitution) * velocity_normal
+                        /
+                        (1.0 / self.mass + 1.0 / planet.0.mass);
+
+
+                    let impulse =
+                        impulse_strength * normal;
+
+
+                    // Apply impulse to this planet
+                    self.velocity += impulse / self.mass;
+                }
+            }
+        }
+    }
+    */
 }

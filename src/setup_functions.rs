@@ -71,7 +71,7 @@ pub fn spawn_planets(
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
     
-    spawn_random_planets(&mut commands, &mut meshes, &mut materials, (20, 350), (1..=35).collect(), (-10000, 10000), (-10000, 10000));
+    spawn_random_planets(&mut commands, &mut meshes, &mut materials, (40, 325), (1..=100).collect(), (-100000, 100000), (-10000, 10000));
 
     
     /*

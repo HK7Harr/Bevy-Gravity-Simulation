@@ -10,7 +10,7 @@ pub fn gravitational_cycle(
     .collect();
 
     // mutate: exclusive pass over the same query
-    for (mut planet, mut transform) in planets.iter_mut() {
+    for (mut planet, transform) in planets.iter_mut() {
         planet.acting_forces(&transform, &snapshot);
         planet.net_force();
         planet.accelerate();
