@@ -36,16 +36,7 @@ impl Planet {
     }
 
     pub fn net_force(&mut self) {
-        let mut net_force = DVec3::ZERO;
-
-        for force in &self.acting_forces {
-            let magnitude = (force.y * force.y + force.z * force.z).sqrt();
-
-            // newtons * (x / magnitude)
-            net_force.x += force[0] * (force[1] / magnitude);
-            net_force.y += force[0] * (force[2] / magnitude);
-        }
-        self.net_force = net_force;
+        self.net_force = self.acting_forces.iter().sum();
         self.acting_forces.clear();
     }
 
@@ -57,7 +48,7 @@ impl Planet {
     pub fn adjust_for_collision(&mut self, own_transform: &Mut<Transform>, all_planets: &Vec<(Planet, Transform)>) {
         for planet in all_planets {
             if planet.0.id != self.id {
-                if com_length_pixels_2d(own_transform.translation, planet.1.translation) <= self.radius as f64 + planet.0.radius as f64 {
+                if com_length_wu_3d(own_transform.translation, planet.1.translation) <= self.radius as f64 + planet.0.radius as f64 {
                     let mass_scalar_ratio = (2.0 * planet.0.mass)/(self.mass + planet.0.mass);
                     let velocity_difference = self.velocity - planet.0.velocity;
                     let transform_difference = own_transform.translation.as_dvec3() - planet.1.translation.as_dvec3();
@@ -70,7 +61,6 @@ impl Planet {
                     
                     let distance_squared = transform_difference.length_squared().max(0.01);
 
-                    let normal = transform_difference.normalize();
 
                     self.velocity = self.velocity - (EC * mass_scalar_ratio * (dot_product / distance_squared) * transform_difference);
                     println!("{}", self.velocity.length());

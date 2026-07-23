@@ -1,4 +1,22 @@
-use crate::{components::Planet, internal_imports::*};
+use crate::{components::Planet, internal_imports::*, helpers::*};
+
+
+pub fn wait_for_start(
+    keys: Res<ButtonInput<KeyCode>>,
+    state: Res<State<SimState>>,
+    mut next_state: ResMut<NextState<SimState>>,
+) {
+    if keys.just_pressed(KeyCode::Space) {
+        if state.get() == &SimState::Waiting {
+            next_state.set(SimState::Running);
+        }
+        else {
+            next_state.set(SimState::Waiting)
+        }
+    }
+}
+
+
 
 pub fn gravitational_cycle(
     mut planets: Query<(&mut Planet, &mut Transform)>,
@@ -14,7 +32,6 @@ pub fn gravitational_cycle(
         planet.acting_forces(&transform, &snapshot);
         planet.net_force();
         planet.accelerate();
-
         }
 }
 
@@ -30,11 +47,13 @@ pub fn collision_detection(
     }
 }
 
+
+
 pub fn apply_velocity(
     mut planets: Query<(&mut Planet, &mut Transform)>,
     time: Res<Time>
 ) {
     for (planet, mut transform) in planets.iter_mut() {
-        transform.translation += (planet.velocity.normalize() * (planet.velocity.length() / MPP) * time.delta_secs() as f64).as_vec3();
+        transform.translation += (planet.velocity.normalize() * (planet.velocity.length() / MWU) * time.delta_secs() as f64).as_vec3();
     }
 }

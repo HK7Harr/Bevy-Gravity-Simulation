@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy::camera_controller::pan_camera::{PanCamera, PanCameraPlugin};
+use bevy_panorbit_camera::*;
 
 mod components;
 
@@ -11,57 +11,40 @@ mod setup_functions;
 use setup_functions::*;
 
 mod helpers;
+use helpers::*;
 
 mod internal_imports;
 
 
 
-pub const G: f64 = 100.0; // G, universal gravitational force
-pub const MPP: f64 = 100.0; // Meters per pixel
+pub const G: f64 = 10.0; // G, universal gravitational force
+pub const MWU: f64 = 100.0; // Meters world unit
 pub const WM: f64 = 1000000.0; // wheight modifier, area of the planet * WM = mass
-pub const EC: f64 = 0.65; // ellastic coefficient, 0 - 1
+pub const EC: f64 = 1.0; // ellastic coefficient, 0 - 1
+pub const B: f32 = 0.1; // brightness of the light
 
-#[derive(States, Debug, Clone, Copy, Eq, PartialEq, Hash, Default)]
-enum SimState {
-    #[default]
-    Waiting,
+pub const MIN_WS: i32 = -100000; // minimum world scale
+pub const MAX_WS: i32 = 100000; // maximum world scale
 
-    Running,
-}
+pub const MIN_R: i32 = 80; // min radius
+pub const MAX_R: i32 = 2500; // max radius
+
 
 
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugins(PanCameraPlugin)
+        .add_plugins(PanOrbitCameraPlugin)
         .init_state::<SimState>()
         // Just the camera, so the window isn't blank while you fullscreen it.
-        .add_systems(Startup, (setup_camera, spawn_planets))
+        .add_systems(Startup, (setup_camera, spawn_planets, setup_lighting))
         .add_systems(Update, wait_for_start)
 
         .add_systems(Update, (gravitational_cycle, collision_detection, apply_velocity).run_if(in_state(SimState::Running)))
         .run();
 }
 
-fn setup_camera(mut commands: Commands) {
-    commands.spawn((Camera2d, PanCamera::default()));
-}
 
 
-
-fn wait_for_start(
-    keys: Res<ButtonInput<KeyCode>>,
-    state: Res<State<SimState>>,
-    mut next_state: ResMut<NextState<SimState>>,
-) {
-    if keys.just_pressed(KeyCode::Space) {
-        if state.get() == &SimState::Waiting {
-            next_state.set(SimState::Running);
-        }
-        else {
-            next_state.set(SimState::Waiting)
-        }
-    }
-}
 
